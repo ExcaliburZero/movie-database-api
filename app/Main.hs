@@ -1,6 +1,6 @@
 module Main where
 
-import Data.String.Strip
+import Database.WebAPI.Movies
 
 main :: IO ()
-main = interact strip
+main = putStrLn "Hello, World!"
