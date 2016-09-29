@@ -16,9 +16,11 @@ main = defaultMain $ do
   programName "movie-database-api"
   command "serve" $ do
     databaseFile <- databaseFileArgument
-    action $ \toParam ->
-      putStrLn $ unwords ["Serving database", show (toParam databaseFile)
+    action $ \toParam -> do
+      let databasePath = toParam databaseFile
+      putStrLn $ unwords ["Serving database", show databasePath
                          , "on port", show defaultPort, "..."]
+      serveDatabase databasePath defaultPort
 
 -- | A parser for parsing the database file argument.
 databaseFileArgument :: OptionDesc r (Arg String)
