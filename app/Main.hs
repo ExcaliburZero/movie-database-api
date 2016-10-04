@@ -14,6 +14,7 @@ import Database.WebAPI.Movies
 main :: IO ()
 main = defaultMain $ do
   programName "movie-database-api"
+
   command "serve" $ do
     databaseFile <- databaseFileArgument
     action $ \toParam -> do
@@ -21,6 +22,14 @@ main = defaultMain $ do
       putStrLn $ unwords ["Serving database", show databasePath
                          , "on port", show defaultPort, "..."]
       serveDatabase databasePath defaultPort
+
+  command "create" $ do
+    databaseFile <- databaseFileArgument
+    action $ \toParam -> do
+      let databasePath = toParam databaseFile
+      putStrLn $ "Creating database at " ++ show databasePath ++ "..."
+      createDatabase databasePath
+      putStrLn "Database successfully created!"
 
 -- | A parser for parsing the database file argument.
 databaseFileArgument :: OptionDesc r (Arg String)

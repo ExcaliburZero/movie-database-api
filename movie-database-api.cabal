@@ -19,6 +19,8 @@ library
                      , Database.WebAPI.Movies.Types
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , HDBC
+                     , HDBC-sqlite3
                      , servant
                      , servant-server
                      , warp
