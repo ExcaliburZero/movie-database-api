@@ -3,6 +3,8 @@
 module Database.WebAPI.Movies.Types where
 
 import Data.Aeson
+import Data.ByteString.Char8 (unpack)
+import Database.HDBC.Types (SqlValue(..))
 import GHC.Generics
 
 data Movie = Movie {
@@ -10,5 +12,15 @@ data Movie = Movie {
   , movie_title    :: String
   , movie_director :: String
   , movie_year     :: Int
-  , movie_rating   :: Float
+  , movie_rating   :: Double
   } deriving (Eq, Generic, Show, ToJSON)
+
+sqlToMovie :: [SqlValue] -> Movie
+sqlToMovie (SqlByteString idString:SqlByteString title:SqlByteString director:SqlInt64 year:SqlDouble rating:[]) = Movie {
+    movie_id       = unpack idString
+  , movie_title    = unpack title
+  , movie_director = unpack director
+  , movie_year     = fromIntegral year
+  , movie_rating   = rating
+}
+sqlToMovie x = error $ "Incorrectly formed Movie sql: " ++ show x

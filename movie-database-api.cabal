@@ -15,15 +15,19 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
+  ghc-options:         -Wall
   exposed-modules:     Database.WebAPI.Movies
+                     , Database.WebAPI.Movies.Queries
                      , Database.WebAPI.Movies.Types
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , bytestring
                      , directory
                      , HDBC
                      , HDBC-sqlite3
                      , servant
                      , servant-server
+                     , transformers
                      , warp
                      , wai
   default-language:    Haskell2010

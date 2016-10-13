@@ -14,21 +14,14 @@ import           Servant.API
 import           Servant.Server
 import           System.Directory (doesFileExist)
 
+import Database.WebAPI.Movies.Queries
 import Database.WebAPI.Movies.Types
 
 type MovieAPI = "movie" :> Get '[JSON] [Movie]
 
 -- | Serves the movies in the given database.
 movieServer :: FilePath -> Handler [Movie]
-movieServer databaseFile = return [
-      Movie {
-          movie_title = "Terminator"
-        , movie_id = "tt1994570"
-        , movie_director = "Ryan McDonald"
-        , movie_year = 2001
-        , movie_rating = 4.8
-        }
-  ]
+movieServer databaseFile = getAllMovies databaseFile
 
 app :: FilePath -> Application
 app databaseFile = serve (Proxy :: Proxy MovieAPI) $ movieServer databaseFile
