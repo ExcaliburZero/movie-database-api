@@ -21,8 +21,13 @@ type MovieAPI = "movie" :> Get '[JSON] [Movie]
 -- | Serves the movies in the given database.
 movieServer :: FilePath -> Handler [Movie]
 movieServer databaseFile = return [
-      Movie { movieName = "Terminator" }
-    , Movie { movieName = "Terminator2" }
+      Movie {
+          movie_title = "Terminator"
+        , movie_id = "tt1994570"
+        , movie_director = "Ryan McDonald"
+        , movie_year = 2001
+        , movie_rating = 4.8
+        }
   ]
 
 app :: FilePath -> Application
