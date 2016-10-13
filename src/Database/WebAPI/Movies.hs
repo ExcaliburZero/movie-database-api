@@ -12,6 +12,7 @@ import           Network.Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import           Servant.API
 import           Servant.Server
+import           System.Directory (doesFileExist)
 
 import Database.WebAPI.Movies.Types
 
@@ -29,22 +30,37 @@ app databaseFile = serve (Proxy :: Proxy MovieAPI) $ movieServer databaseFile
 
 -- | Serves the given database on the given port.
 serveDatabase :: FilePath -> Int -> IO ()
-serveDatabase databaseFile port = Warp.run port (app databaseFile)
+serveDatabase databaseFile port = do
+  databaseExists <- doesFileExist databaseFile
+  if databaseExists
+    then do
+      putStrLn $ unwords ["Serving database", show databaseFile
+                         , "on port", show port, "..."]
+      Warp.run port (app databaseFile)
+    else
+      putStrLn $ "The given database file " ++ show databaseFile ++ " does not exist."
 
 -- | Creates an empty movie database at the given filepath.
 createDatabase :: FilePath -> IO ()
 createDatabase databaseFile = do
-    databaseConnection <- connectSqlite3 databaseFile
-    mapM_ (createSingleDatabase databaseConnection) [
-        createActorTable
-      , createMovieTable
-      , createGenreTable
-      , createActedInTable
-      , createMovieTypesTable
-      , createRelatedMoviesTable
-      ]
-    commit databaseConnection
-    disconnect databaseConnection
+    databaseExists <- doesFileExist databaseFile
+    if databaseExists
+      then
+        putStrLn $ show databaseFile ++ " already exists."
+      else do
+        putStrLn $ "Creating database at " ++ show databaseFile ++ "..."
+        databaseConnection <- connectSqlite3 databaseFile
+        mapM_ (createSingleDatabase databaseConnection) [
+            createActorTable
+          , createMovieTable
+          , createGenreTable
+          , createActedInTable
+          , createMovieTypesTable
+          , createRelatedMoviesTable
+          ]
+        commit databaseConnection
+        disconnect databaseConnection
+        putStrLn "Database successfully created!"
   where
     createSingleDatabase conn command = HDBC.run conn command []
 

@@ -32,8 +32,6 @@ main = defaultMain $ do
     action $ \toParam -> do
       let databasePath = toParam databaseFile
       let port = fromMaybe defaultPort (toParam portNumber)
-      putStrLn $ unwords ["Serving database", show databasePath
-                         , "on port", show port, "..."]
       serveDatabase databasePath port
 
   command "create" $ do
@@ -43,9 +41,7 @@ main = defaultMain $ do
 
     action $ \toParam -> do
       let databasePath = toParam databaseFile
-      putStrLn $ "Creating database at " ++ show databasePath ++ "..."
       createDatabase databasePath
-      putStrLn "Database successfully created!"
 
 -- | A parser for parsing the database file argument.
 databaseFileArgument :: OptionDesc r (Arg String)
