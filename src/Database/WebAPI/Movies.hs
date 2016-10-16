@@ -3,6 +3,8 @@
 module Database.WebAPI.Movies (
     createDatabase
   , serveDatabase
+
+  , MovieAPI
 ) where
 
 import           Data.Proxy
