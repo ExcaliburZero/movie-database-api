@@ -1,6 +1,11 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
-module Database.WebAPI.Movies.Types where
+module Database.WebAPI.Movies.Types (
+    Movie(..)
+
+  , sqlToMovie
+  , sqlToSingleMovie
+) where
 
 import Data.Aeson
 import Data.ByteString.Char8 (unpack)
@@ -24,3 +29,8 @@ sqlToMovie (SqlByteString idString:SqlByteString title:SqlByteString director:Sq
   , movie_rating   = rating
 }
 sqlToMovie x = error $ "Incorrectly formed Movie sql: " ++ show x
+
+sqlToSingleMovie :: [[SqlValue]] -> Maybe Movie
+sqlToSingleMovie sql = case sql of
+  [] -> Nothing
+  x  -> Just . sqlToMovie . head $ x
