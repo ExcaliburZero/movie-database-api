@@ -45,11 +45,11 @@ getMovieById databaseFile movieId = createHandler maybeMovie
 
 -- | A Handler which returns all of the Movies with the given title.
 getMoviesByTitle :: FilePath -> String -> Handler [Movie]
-getMoviesByTitle databaseFile title = createHandler maybeMovie
+getMoviesByTitle databaseFile title = createHandler selectedMovies
   where
-    maybeMovie      = fmap (map sqlToMovie) queryResults
+    selectedMovies  = fmap (map sqlToMovie) queryResults
     queryResults    = queryDatabase databaseFile movieTitleQuery [SqlString title]
-    movieTitleQuery = "SELECT * FROM Movie WHERE movie_title = ?"
+    movieTitleQuery = "SELECT * FROM Movie WHERE movie_title LIKE '%' || ? || '%'"
 
 -- | Runs the given query on the given database and returns the resulting
 -- values.
