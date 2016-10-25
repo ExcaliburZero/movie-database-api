@@ -19,14 +19,16 @@ import Database.WebAPI.Movies.Types
 
 type MovieAPI =
        "movies" :> Get '[JSON] [Movie]
+  :<|> "movies" :> Capture "start" Int :> Capture "end" Int :> Get '[JSON] [Movie]
   :<|> "movies" :> "id" :> Capture "id" String :> Get '[JSON] (Maybe Movie)
   :<|> "movies" :> "title" :> Capture "title" String :> Get '[JSON] [Movie]
 
 app :: FilePath -> Application
 app databaseFile = serve (Proxy :: Proxy MovieAPI)
-  $    getAllMovies databaseFile
-  :<|> getMovieById databaseFile
-  :<|> getMoviesByTitle databaseFile
+  $    getAllMovies      databaseFile
+  :<|> getSelectedMovies databaseFile
+  :<|> getMovieById      databaseFile
+  :<|> getMoviesByTitle  databaseFile
 
 -- | Serves the given database on the given port.
 serveDatabase :: FilePath -> Int -> IO ()

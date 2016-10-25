@@ -1,5 +1,6 @@
 module Database.WebAPI.Movies.Queries (
     getAllMovies
+  , getSelectedMovies
   , getMovieById
   , getMoviesByTitle
 
@@ -17,6 +18,22 @@ import Database.WebAPI.Movies.Types
 -- | A Handler which returns all of the Movies in the given database.
 getAllMovies :: FilePath -> Handler [Movie]
 getAllMovies databaseFile = createHandler $ fmap (map sqlToMovie) $ queryDatabase databaseFile "SELECT * FROM Movie;" []
+
+-- | A Handler which returns the movies between the two given indexes.
+--
+-- The start index is inclusive, while the end index is exclusive. The start
+-- index should be less than the end index, and the start index should be
+-- greater than -1.
+--
+-- If more movies are asked for than are available in the database, then the
+-- unavailable movies are not included in the returned list.
+getSelectedMovies :: FilePath -> Int -> Int -> Handler [Movie]
+getSelectedMovies databaseFile start end =
+    fmap takeSelection $ getAllMovies databaseFile
+  where
+    takeSelection = if   end > start && start > -1
+                    then take (end - start) . drop start
+                    else const []
 
 -- | A Handler which returns the Movie with the given id.
 getMovieById :: FilePath -> String -> Handler (Maybe Movie)
