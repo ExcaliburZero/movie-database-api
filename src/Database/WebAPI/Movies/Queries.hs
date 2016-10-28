@@ -4,7 +4,10 @@ module Database.WebAPI.Movies.Queries (
   , getMovieById
   , getMoviesByTitle
 
+  , addRelatedMovies
+
   , queryDatabase
+  , insertDatabase
   , createHandler
 ) where
 
@@ -51,6 +54,13 @@ getMoviesByTitle databaseFile title = createHandler selectedMovies
     queryResults    = queryDatabase databaseFile movieTitleQuery [SqlString title]
     movieTitleQuery = "SELECT * FROM Movie WHERE movie_title LIKE '%' || ? || '%'"
 
+addRelatedMovies :: FilePath -> String -> String -> Handler Bool
+addRelatedMovies databaseFile movie1 movie2 = createHandler insertAction
+  where
+    insertAction = insertDatabase databaseFile insertString elements
+    elements     = map SqlString [movie1, movie2]
+    insertString = "INSERT INTO RelatedMovies VALUES (?,?)"
+
 -- | Runs the given query on the given database and returns the resulting
 -- values.
 queryDatabase :: FilePath -> String -> [SqlValue] -> IO [[SqlValue]]
@@ -59,6 +69,14 @@ queryDatabase databaseFile queryString elements = do
   items <- quickQuery' databaseConnection queryString elements
   disconnect databaseConnection
   return items
+
+insertDatabase :: FilePath -> String -> [SqlValue] -> IO Bool
+insertDatabase databaseFile insertString elements = do
+  databaseConnection <- connectSqlite3 databaseFile
+  _ <- run databaseConnection insertString elements
+  commit databaseConnection
+  disconnect databaseConnection
+  return True
 
 -- | Creates an api handler from an IO value.
 createHandler :: IO a -> Handler a
