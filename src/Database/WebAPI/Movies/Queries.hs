@@ -3,6 +3,7 @@ module Database.WebAPI.Movies.Queries (
   , getSelectedMovies
   , getMovieById
   , getMoviesByTitle
+  , getMoviesByActor
 
   , addRelatedMovies
 
@@ -53,6 +54,14 @@ getMoviesByTitle databaseFile title = createHandler selectedMovies
     selectedMovies  = fmap (map sqlToMovie) queryResults
     queryResults    = queryDatabase databaseFile movieTitleQuery [SqlString title]
     movieTitleQuery = "SELECT * FROM Movie WHERE movie_title LIKE '%' || ? || '%'"
+
+-- | A Handler which returns all of the Movies with the given actor.
+getMoviesByActor :: FilePath -> String -> Handler [Movie]
+getMoviesByActor databaseFile actor = createHandler selectedMovies
+  where
+    selectedMovies  = fmap (map sqlToMovie) queryResults
+    queryResults    = queryDatabase databaseFile movieActorQuery [SqlString actor]
+    movieActorQuery = "SELECT Movie.movie_id, movie_title, movie_director, movie_year, movie_rating FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) WHERE actor_name LIKE '%' || ? || '%'"
 
 addRelatedMovies :: FilePath -> String -> String -> Handler Bool
 addRelatedMovies databaseFile movie1 movie2 = createHandler insertAction
