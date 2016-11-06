@@ -30,6 +30,13 @@ sqlToMovie (SqlByteString idString:SqlByteString title:SqlByteString director:Sq
   , movie_year     = fromIntegral year
   , movie_rating   = rating
 }
+sqlToMovie (SqlByteString idString:SqlByteString title:SqlByteString director:SqlInt64 year:SqlInt64 rating:[]) = Movie {
+    movie_id       = unpack idString
+  , movie_title    = unpack title
+  , movie_director = unpack director
+  , movie_year     = fromIntegral year
+  , movie_rating   = fromIntegral rating
+}
 sqlToMovie x = error $ "Incorrectly formed Movie sql: " ++ show x
 
 sqlToSingleMovie :: [[SqlValue]] -> Maybe Movie
