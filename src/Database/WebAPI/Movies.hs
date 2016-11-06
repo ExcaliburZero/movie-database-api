@@ -61,9 +61,7 @@ createDatabase databaseFile = do
         putStrLn $ "Creating database at " ++ show databaseFile ++ "..."
         databaseConnection <- connectSqlite3 databaseFile
         mapM_ (createSingleDatabase databaseConnection) [
-            createActorTable
-          , createMovieTable
-          , createGenreTable
+            createMovieTable
           , createActedInTable
           , createMovieTypesTable
           , createRelatedMoviesTable
@@ -82,13 +80,6 @@ createDatabase databaseFile = do
 createTableCommand :: String -> String -> String
 createTableCommand name contents = "CREATE TABLE " ++ name ++ " (" ++ contents ++ ");"
 
--- | The SQL command used to create the Actor table.
-createActorTable :: String
-createActorTable = createTableCommand "Actor" $ unlist [
-    "actor_name Text"
-  , "PRIMARY KEY (actor_name)"
-  ]
-
 -- | The SQL command used to create the Movie table.
 createMovieTable :: String
 createMovieTable = createTableCommand "Movie" $ unlist [
@@ -98,13 +89,6 @@ createMovieTable = createTableCommand "Movie" $ unlist [
   , "movie_year Int"
   , "movie_rating Decimal"
   , "PRIMARY KEY (movie_id)"
-  ]
-
--- | The SQL command used to create the Genre table.
-createGenreTable :: String
-createGenreTable = createTableCommand "Genre" $ unlist [
-    "genre_name Text"
-  , "PRIMARY KEY (genre_name)"
   ]
 
 -- | The SQL command used to create the ActedIn table.
