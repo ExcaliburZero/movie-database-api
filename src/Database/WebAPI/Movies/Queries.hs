@@ -7,6 +7,8 @@ module Database.WebAPI.Movies.Queries (
 
   , addRelatedMovies
 
+  , getActorsByMovie
+
   , queryDatabase
   , insertDatabase
   , createHandler
@@ -69,6 +71,14 @@ addRelatedMovies databaseFile movie1 movie2 = createHandler insertAction
     insertAction = insertDatabase databaseFile insertString elements
     elements     = map SqlString [movie1, movie2]
     insertString = "INSERT INTO RelatedMovies VALUES (?,?)"
+
+-- | A Handler which returns all of the Actors in the given Movie.
+getActorsByMovie :: FilePath -> String -> Handler [Actor]
+getActorsByMovie databaseFile movieID = createHandler selectedActors
+  where
+    selectedActors  = fmap (map sqlToActor) queryResults
+    queryResults    = queryDatabase databaseFile actorMovieQuery [SqlString movieID]
+    actorMovieQuery = "SELECT actor_name FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) WHERE Movie.movie_id = ?"
 
 -- | Runs the given query on the given database and returns the resulting
 -- values.

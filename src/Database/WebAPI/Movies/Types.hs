@@ -2,9 +2,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Database.WebAPI.Movies.Types (
     Movie(..)
+  , Actor(..)
 
   , sqlToMovie
   , sqlToSingleMovie
+  , sqlToActor
 ) where
 
 import Data.Aeson
@@ -34,3 +36,11 @@ sqlToSingleMovie :: [[SqlValue]] -> Maybe Movie
 sqlToSingleMovie sql = case sql of
   [] -> Nothing
   x  -> Just . sqlToMovie . head $ x
+
+data Actor = Actor {
+  actor_name :: String
+} deriving (Eq, Generic, Show, ToJSON)
+
+sqlToActor :: [SqlValue] -> Actor
+sqlToActor (SqlByteString name:[]) = Actor {actor_name = unpack name}
+sqlToActor x = error $ "Incorrectly formed Movie sql: " ++ show x
