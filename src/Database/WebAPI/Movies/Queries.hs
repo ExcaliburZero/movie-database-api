@@ -4,6 +4,7 @@ module Database.WebAPI.Movies.Queries (
   , getMovieById
   , getMoviesByTitle
   , getMoviesByActor
+  , getRelatedMovies
 
   , addRelatedMovies
 
@@ -14,7 +15,9 @@ module Database.WebAPI.Movies.Queries (
   , createHandler
 ) where
 
+import Control.Monad (liftM2)
 import Control.Monad.Trans.Except (ExceptT(..))
+import Data.ByteString.Char8 (unpack)
 import Database.HDBC as HDBC
 import Database.HDBC.Sqlite3
 import Servant.Server (Handler())
@@ -65,6 +68,32 @@ getMoviesByActor databaseFile actor = createHandler selectedMovies
     queryResults    = queryDatabase databaseFile movieActorQuery [SqlString actor]
     movieActorQuery = "SELECT Movie.movie_id, movie_title, movie_director, movie_year, movie_rating FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) WHERE actor_name LIKE '%' || ? || '%'"
 
+-- | A Handler which returns all of the movies related to the given movie.
+getRelatedMovies :: FilePath -> String -> Handler [Movie]
+--getRelatedMovies databaseFile movieId = fmap (fmap (fmap catMaybes)) $ fmap (map (getMovieById databaseFile)) selectedIds
+--getRelatedMovies databaseFile movieId = fmap ((\x -> fmap maybeToList (getMovieById databaseFile x))) selectedIds
+getRelatedMovies databaseFile movieId = createHandler selectedMovies
+  where
+    selectedMovies = do
+      results <- fmap ((map . map) sqlToMovie) queryResults0
+      return $ map head $ filter (\x -> not (null x)) results
+    queryResults0  = do
+      ids <- selectedIds
+      databaseConnection <- connectSqlite3 databaseFile
+      let elements = map (\x -> [x]) $ map SqlString ids
+      items <- mapM (quickQuery' databaseConnection movieIdQuery) elements
+      disconnect databaseConnection
+      return items
+    movieIdQuery   = "SELECT * FROM Movie WHERE movie_id = ?"
+    selectedIds    = fmap (map extractId) $ liftM2 (++) queryResults1 queryResults2
+    queryResults1  = queryDatabase databaseFile relatedMoviesQuery1 [SqlString movieId]
+    relatedMoviesQuery1 = "SELECT movie_id_2 FROM RelatedMovies WHERE movie_id_1 = ?"
+    queryResults2 = queryDatabase databaseFile relatedMoviesQuery2 [SqlString movieId]
+    relatedMoviesQuery2 = "SELECT movie_id_1 FROM RelatedMovies WHERE movie_id_2 = ?"
+    extractId ([SqlByteString i]) = unpack i
+    extractId _ = error "Bad"
+
+-- | A Handler which adds a set of related movies.
 addRelatedMovies :: FilePath -> String -> String -> Handler Bool
 addRelatedMovies databaseFile movie1 movie2 = createHandler insertAction
   where

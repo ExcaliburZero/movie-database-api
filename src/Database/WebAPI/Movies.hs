@@ -23,6 +23,7 @@ type MovieAPI =
   :<|> "movies" :> "id" :> Capture "id" String :> Get '[JSON] (Maybe Movie)
   :<|> "movies" :> "title" :> Capture "title" String :> Get '[JSON] [Movie]
   :<|> "movies" :> "actor" :> Capture "actor" String :> Get '[JSON] [Movie]
+  :<|> "movies" :> "related" :> Capture "related" String :> Get '[JSON] [Movie]
   :<|> "related" :> Capture "movie1" String :> Capture "movie2" String :> Get '[JSON] Bool
   :<|> "actors" :> "movie_id" :> Capture "movie_id" String :> Get '[JSON] [Actor]
 
@@ -33,6 +34,7 @@ app databaseFile = serve (Proxy :: Proxy MovieAPI)
   :<|> getMovieById      databaseFile
   :<|> getMoviesByTitle  databaseFile
   :<|> getMoviesByActor  databaseFile
+  :<|> getRelatedMovies  databaseFile
   :<|> addRelatedMovies  databaseFile
   :<|> getActorsByMovie  databaseFile
 
