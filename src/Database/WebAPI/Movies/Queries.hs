@@ -8,6 +8,8 @@ module Database.WebAPI.Movies.Queries (
 
   , addRelatedMovies
 
+  , getGenresByMovie
+
   , getActorsByMovie
 
   , queryDatabase
@@ -108,6 +110,14 @@ getActorsByMovie databaseFile movieID = createHandler selectedActors
     selectedActors  = fmap (map sqlToActor) queryResults
     queryResults    = queryDatabase databaseFile actorMovieQuery [SqlString movieID]
     actorMovieQuery = "SELECT actor_name FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) WHERE Movie.movie_id = ?"
+
+-- | A Handler which returns all of the Genres for the given Movie.
+getGenresByMovie :: FilePath -> String -> Handler [Genre]
+getGenresByMovie databaseFile movieID = createHandler selectedGenres
+  where
+    selectedGenres  = fmap (map sqlToGenre) queryResults
+    queryResults    = queryDatabase databaseFile genreMovieQuery [SqlString movieID]
+    genreMovieQuery = "SELECT genre_name FROM Movie INNER JOIN MovieTypes ON (Movie.movie_id = MovieTypes.movie_id) WHERE Movie.movie_id = ?"
 
 -- | Runs the given query on the given database and returns the resulting
 -- values.

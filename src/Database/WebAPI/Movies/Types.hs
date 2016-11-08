@@ -3,10 +3,12 @@
 module Database.WebAPI.Movies.Types (
     Movie(..)
   , Actor(..)
+  , Genre(..)
 
   , sqlToMovie
   , sqlToSingleMovie
   , sqlToActor
+  , sqlToGenre
 ) where
 
 import Data.Aeson
@@ -50,4 +52,12 @@ data Actor = Actor {
 
 sqlToActor :: [SqlValue] -> Actor
 sqlToActor (SqlByteString name:[]) = Actor {actor_name = unpack name}
-sqlToActor x = error $ "Incorrectly formed Movie sql: " ++ show x
+sqlToActor x = error $ "Incorrectly formed Actor sql: " ++ show x
+
+data Genre = Genre {
+  genre_name :: String
+} deriving (Eq, Generic, Show, ToJSON)
+
+sqlToGenre :: [SqlValue] -> Genre
+sqlToGenre (SqlByteString name:[]) = Genre {genre_name = unpack name}
+sqlToGenre x = error $ "Incorrectly formed Genre sql: " ++ show x

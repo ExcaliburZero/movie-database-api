@@ -26,6 +26,7 @@ type MovieAPI =
   :<|> "movies" :> "related" :> Capture "related" String :> Get '[JSON] [Movie]
   :<|> "related" :> Capture "movie1" String :> Capture "movie2" String :> Get '[JSON] Bool
   :<|> "actors" :> "movie_id" :> Capture "movie_id" String :> Get '[JSON] [Actor]
+  :<|> "genres" :> "movie_id" :> Capture "movie_id" String :> Get '[JSON] [Genre]
 
 app :: FilePath -> Application
 app databaseFile = serve (Proxy :: Proxy MovieAPI)
@@ -37,6 +38,7 @@ app databaseFile = serve (Proxy :: Proxy MovieAPI)
   :<|> getRelatedMovies  databaseFile
   :<|> addRelatedMovies  databaseFile
   :<|> getActorsByMovie  databaseFile
+  :<|> getGenresByMovie  databaseFile
 
 -- | Serves the given database on the given port.
 serveDatabase :: FilePath -> Int -> IO ()
