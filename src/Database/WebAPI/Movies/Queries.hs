@@ -60,7 +60,7 @@ getMoviesByTitle databaseFile title = createHandler selectedMovies
   where
     selectedMovies  = fmap (map sqlToMovie) queryResults
     queryResults    = queryDatabase databaseFile movieTitleQuery [SqlString title]
-    movieTitleQuery = "SELECT * FROM Movie WHERE movie_title LIKE '%' || ? || '%'"
+    movieTitleQuery = "SELECT * FROM Movie WHERE movie_title LIKE '%' || ? || '%' ORDER BY movie_title ASC"
 
 -- | A Handler which returns all of the Movies with the given actor.
 getMoviesByActor :: FilePath -> String -> Handler [Movie]
@@ -86,7 +86,7 @@ getRelatedMovies databaseFile movieId = createHandler selectedMovies
       items <- mapM (quickQuery' databaseConnection movieIdQuery) elements
       disconnect databaseConnection
       return items
-    movieIdQuery   = "SELECT * FROM Movie WHERE movie_id = ?"
+    movieIdQuery   = "SELECT * FROM Movie WHERE movie_id = ? ORDER BY movie_title ASC"
     selectedIds    = fmap (map extractId) $ liftM2 (++) queryResults1 queryResults2
     queryResults1  = queryDatabase databaseFile relatedMoviesQuery1 [SqlString movieId]
     relatedMoviesQuery1 = "SELECT movie_id_2 FROM RelatedMovies WHERE movie_id_1 = ?"
