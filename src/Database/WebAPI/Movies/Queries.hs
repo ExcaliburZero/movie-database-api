@@ -78,7 +78,7 @@ getMoviesSearch databaseFile term sType genre rating = createHandler selectedMov
   where
     selectedMovies   = fmap (map sqlToMovie) queryResults
     queryResults     = queryDatabase databaseFile movieSearchQuery [SqlString term]
-    movieSearchQuery = "SELECT Movie.movie_id, movie_title, movie_director, movie_year, movie_rating FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) INNER JOIN MovieTypes ON (Movie.movie_id = MovieTypes.movie_id) WHERE " ++ termWhere ++ genreWhere ++ ratingWhere ++ "GROUP BY Movie.movie_id"
+    movieSearchQuery = "SELECT Movie.movie_id, movie_title, movie_director, movie_year, movie_rating FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) INNER JOIN MovieTypes ON (Movie.movie_id = MovieTypes.movie_id) WHERE " ++ termWhere ++ genreWhere ++ ratingWhere ++ "GROUP BY Movie.movie_id ORDER BY movie_title ASC"
     termWhere   = if sType == "Actor"
                   then "actor_name LIKE '%' || ? || '%' "
                   else "movie_title LIKE '%' || ? || '%' "
