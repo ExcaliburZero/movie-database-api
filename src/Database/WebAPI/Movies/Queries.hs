@@ -4,6 +4,7 @@ module Database.WebAPI.Movies.Queries (
   , getMovieById
   , getMoviesByTitle
   , getMoviesByActor
+  , getMoviesSearch
   , getRelatedMovies
 
   , addRelatedMovies
@@ -71,10 +72,25 @@ getMoviesByActor databaseFile actor = createHandler selectedMovies
     queryResults    = queryDatabase databaseFile movieActorQuery [SqlString actor]
     movieActorQuery = "SELECT Movie.movie_id, movie_title, movie_director, movie_year, movie_rating FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) WHERE actor_name LIKE '%' || ? || '%'"
 
+-- | A Handler which returns all of the Movies that meet the given search filters.
+getMoviesSearch :: FilePath -> String -> String -> String -> String -> Handler [Movie]
+getMoviesSearch databaseFile term sType genre rating = createHandler selectedMovies
+  where
+    selectedMovies   = fmap (map sqlToMovie) queryResults
+    queryResults     = queryDatabase databaseFile movieSearchQuery [SqlString term]
+    movieSearchQuery = "SELECT Movie.movie_id, movie_title, movie_director, movie_year, movie_rating FROM Movie INNER JOIN ActedIn ON (Movie.movie_id = ActedIn.movie_id) INNER JOIN MovieTypes ON (Movie.movie_id = MovieTypes.movie_id) WHERE " ++ termWhere ++ genreWhere ++ ratingWhere ++ "GROUP BY Movie.movie_id ORDER BY movie_title ASC"
+    termWhere   = if sType == "Actor"
+                  then "actor_name LIKE '%' || ? || '%' "
+                  else "movie_title LIKE '%' || ? || '%' "
+    genreWhere  = if genre /= "Any"
+                  then "AND genre_name = '" ++ genre ++ "' "
+                  else ""
+    ratingWhere = if rating /= "Any"
+                  then "AND movie_rating BETWEEN " ++ rating ++ " AND " ++ show ((read :: String -> Int) rating + 1) ++ " "
+                  else ""
+
 -- | A Handler which returns all of the movies related to the given movie.
 getRelatedMovies :: FilePath -> String -> Handler [Movie]
---getRelatedMovies databaseFile movieId = fmap (fmap (fmap catMaybes)) $ fmap (map (getMovieById databaseFile)) selectedIds
---getRelatedMovies databaseFile movieId = fmap ((\x -> fmap maybeToList (getMovieById databaseFile x))) selectedIds
 getRelatedMovies databaseFile movieId = createHandler selectedMovies
   where
     selectedMovies = do
