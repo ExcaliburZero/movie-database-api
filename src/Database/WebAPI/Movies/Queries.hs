@@ -6,6 +6,7 @@ module Database.WebAPI.Movies.Queries (
   , getMoviesByActor
   , getMoviesSearch
   , getRelatedMovies
+  , deleteMovieById
 
   , addRelatedMovies
 
@@ -111,6 +112,24 @@ getRelatedMovies databaseFile movieId = createHandler selectedMovies
     relatedMoviesQuery2 = "SELECT movie_id_1 FROM RelatedMovies WHERE movie_id_2 = ?"
     extractId ([SqlByteString i]) = unpack i
     extractId _ = error "Bad"
+
+-- | A Handler which deletes the Movie with the given id.
+deleteMovieById :: FilePath -> String -> Handler Bool
+deleteMovieById databaseFile movieId = createHandler deleteAction
+  where
+    deleteAction = do
+      databaseConnection <- connectSqlite3 databaseFile
+      _ <- run databaseConnection deleteStringMovie   [SqlString movieId]
+      _ <- run databaseConnection deleteStringActor   [SqlString movieId]
+      _ <- run databaseConnection deleteStringGenre   [SqlString movieId]
+      _ <- run databaseConnection deleteStringRelated $ map SqlString [movieId, movieId]
+      commit databaseConnection
+      disconnect databaseConnection
+      return True
+    deleteStringMovie   = "DELETE FROM Movie WHERE movie_id = ?"
+    deleteStringActor   = "DELETE FROM ActedIn WHERE movie_id = ?"
+    deleteStringGenre   = "DELETE FROM MovieTypes WHERE movie_id = ?"
+    deleteStringRelated = "DELETE FROM RelatedMovies WHERE movie_id_1 = ? || movie_id_2 = ?"
 
 -- | A Handler which adds a set of related movies.
 addRelatedMovies :: FilePath -> String -> String -> Handler Bool
