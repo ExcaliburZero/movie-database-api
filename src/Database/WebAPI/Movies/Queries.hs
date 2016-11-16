@@ -7,6 +7,7 @@ module Database.WebAPI.Movies.Queries (
   , getMoviesSearch
   , getRelatedMovies
   , deleteMovieById
+  , addMovieByTitle
 
   , addRelatedMovies
 
@@ -27,6 +28,7 @@ import Database.HDBC as HDBC
 import Database.HDBC.Sqlite3
 import Servant.Server (Handler())
 
+import Database.WebAPI.Movies.MovieAPI
 import Database.WebAPI.Movies.Types
 
 -- | A Handler which returns all of the Movies in the given database.
@@ -130,6 +132,23 @@ deleteMovieById databaseFile movieId = createHandler deleteAction
     deleteStringActor   = "DELETE FROM ActedIn WHERE movie_id = ?"
     deleteStringGenre   = "DELETE FROM MovieTypes WHERE movie_id = ?"
     deleteStringRelated = "DELETE FROM RelatedMovies WHERE movie_id_1 = ? || movie_id_2 = ?"
+
+-- | A Handler which adds the Movie with the given name to the database.
+addMovieByTitle :: FilePath -> String -> Handler Bool
+addMovieByTitle databaseFile movieTitle = createHandler addAction
+  where
+    addAction = do
+      Just (movie, actors, genres) <- queryMovieByTitle movieTitle
+      let actorToSql (movieId, actor) = [SqlString (actor_name actor),SqlString movieId]
+      let genreToSql (movieId, genre) = [SqlString movieId, SqlString (genre_name genre)]
+      do
+        a <- insertDatabase databaseFile movieString (movieToSql movie)
+        b <- mapM (insertDatabase databaseFile actorString) $ map actorToSql actors
+        c <- mapM (insertDatabase databaseFile genreString) $ map genreToSql genres
+        return $ a && (head b) && (head c)
+    movieString = "INSERT INTO Movie VALUES (?, ?, ?, ?, ?)"
+    actorString = "INSERT INTO ActedIn VALUES (?, ?)"
+    genreString = "INSERT INTO MovieTypes VALUES (?, ?)"
 
 -- | A Handler which adds a set of related movies.
 addRelatedMovies :: FilePath -> String -> String -> Handler Bool

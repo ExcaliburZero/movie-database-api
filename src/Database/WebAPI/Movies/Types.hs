@@ -7,6 +7,7 @@ module Database.WebAPI.Movies.Types (
 
   , sqlToMovie
   , sqlToSingleMovie
+  , movieToSql
   , sqlToActor
   , sqlToGenre
 ) where
@@ -45,6 +46,15 @@ sqlToSingleMovie :: [[SqlValue]] -> Maybe Movie
 sqlToSingleMovie sql = case sql of
   [] -> Nothing
   x  -> Just . sqlToMovie . head $ x
+
+movieToSql :: Movie -> [SqlValue]
+movieToSql movie = [
+    SqlString (movie_id       movie)
+  , SqlString (movie_title    movie)
+  , SqlString (movie_director movie)
+  , SqlInt64  (fromIntegral (movie_year movie))
+  , SqlDouble (movie_rating   movie)
+  ]
 
 data Actor = Actor {
   actor_name :: String
