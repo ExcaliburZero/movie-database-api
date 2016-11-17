@@ -27,12 +27,13 @@ library
                      , HDBC
                      , HDBC-sqlite3
                      , HTTP
-                     , unordered-containers
+                     , MissingH
                      , servant
                      , servant-server
                      , split
                      , text
                      , transformers
+                     , unordered-containers
                      , warp
                      , wai
   default-language:    Haskell2010

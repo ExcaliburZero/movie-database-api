@@ -8,6 +8,7 @@ module Database.WebAPI.Movies.MovieAPI (
 import Data.Aeson
 import Data.Aeson.Types
 import Data.List.Split (splitOn)
+import Data.List.Utils (replace)
 import Data.String (fromString)
 import Text.Read (readMaybe)
 import Network.HTTP
@@ -23,7 +24,7 @@ queryMovieByTitle movieTitle = do
 
 -- | Returns an Omdb query url for the given movie title.
 omdbUrl :: String -> String
-omdbUrl title = "http://www.omdbapi.com/?t=" ++ title ++ "&y=&plot=short&r=json"
+omdbUrl title = "http://www.omdbapi.com/?t=" ++ (replace " " "%20" title) ++ "&y=&plot=short&r=json"
 
 -- | Queries the Ombd Api using the given movie title and returns the json
 -- response.
